@@ -1,85 +1,67 @@
 const products = [
-  { id: 1, name: "T-Shirt", price: 25.99, image: "https://via.placeholder.com/200x150?text=T-Shirt" },
-  { id: 2, name: "Shoes", price: 59.99, image: "https://via.placeholder.com/200x150?text=Shoes" },
-  { id: 3, name: "Watch", price: 120.00, image: "https://via.placeholder.com/200x150?text=Watch" },
-  { id: 4, name: "Backpack", price: 35.49, image: "https://via.placeholder.com/200x150?text=Backpack" },
-  { id: 5, name: "Headphones", price: 89.00, image: "https://via.placeholder.com/200x150?text=Headphones" }
+  { id: 1, name: "T-Shirt", price: 29.99, image: "https://images.app.goo.gl/xdWQBU1J1bec87Hp9" },
+  { id: 2, name: "Sneakers", price: 59.99, image: "https://images.app.goo.gl/HzCkMmNYfhdtHu148" },
+  { id: 3, name: "Backpack", price: 45.00, image: "https://images.app.goo.gl/ytRqED9SaNWpJiGU8" },
+  { id: 4, name: "Watch", price: 89.99, image: "https://images.app.goo.gl/68N5XLJms2ZYhiU97" }
 ];
 
 let cart = {};
 
-const productSection = document.getElementById('productSection');
+const productList = document.getElementById('productList');
 const cartItems = document.getElementById('cartItems');
+const cartCount = document.getElementById('cartCount');
 const cartTotal = document.getElementById('cartTotal');
-const searchInput = document.getElementById('searchInput');
 
-function renderProducts(productList) {
-  productSection.innerHTML = '';
-  productList.forEach(product => {
-    const div = document.createElement('div');
-    div.className = 'product';
-    div.innerHTML = `
-      <img src="${product.image}" alt="${product.name}">
-      <h3>${product.name}</h3>
-      <p>$${product.price.toFixed(2)}</p>
-      <button onclick="addToCart(${product.id})">Add to Cart</button>
+function renderProducts() {
+  if (!productList) return;
+  productList.innerHTML = '';
+  products.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <img src="${p.image}" alt="${p.name}" />
+      <h3>${p.name}</h3>
+      <p>$${p.price.toFixed(2)}</p>
+      <button onclick="addToCart(${p.id})">Add to Cart</button>
     `;
-    productSection.appendChild(div);
+    productList.appendChild(card);
   });
 }
 
-function addToCart(productId) {
-  if (cart[productId]) {
-    cart[productId].quantity++;
+function addToCart(id) {
+  const product = products.find(p => p.id === id);
+  if (!product) return;
+
+  if (!cart[id]) {
+    cart[id] = { ...product, quantity: 1 };
   } else {
-    const product = products.find(p => p.id === productId);
-    cart[productId] = { ...product, quantity: 1 };
+    cart[id].quantity++;
   }
-  renderCart();
+
+  updateCartUI();
 }
 
-function removeFromCart(productId) {
-  if (cart[productId]) {
-    cart[productId].quantity--;
-    if (cart[productId].quantity <= 0) {
-      delete cart[productId];
-    }
-    renderCart();
-  }
-}
+function updateCartUI() {
+  if (!cartItems || !cartCount || !cartTotal) return;
 
-function deleteFromCart(productId) {
-  delete cart[productId];
-  renderCart();
-}
-
-function renderCart() {
   cartItems.innerHTML = '';
   let total = 0;
+  let count = 0;
 
   Object.values(cart).forEach(item => {
     const li = document.createElement('li');
-    total += item.price * item.quantity;
-
     li.innerHTML = `
-      ${item.name} ($${item.price} × ${item.quantity})
-      <div class="cart-controls">
-        <button onclick="removeFromCart(${item.id})">-</button>
-        <button onclick="addToCart(${item.id})">+</button>
-        <button onclick="deleteFromCart(${item.id})">x</button>
-      </div>
+      ${item.name} × ${item.quantity}
+      <span>$${(item.price * item.quantity).toFixed(2)}</span>
     `;
     cartItems.appendChild(li);
+
+    total += item.price * item.quantity;
+    count += item.quantity;
   });
 
+  cartCount.textContent = count;
   cartTotal.textContent = total.toFixed(2);
 }
 
-searchInput.addEventListener('input', () => {
-  const query = searchInput.value.toLowerCase();
-  const filtered = products.filter(p => p.name.toLowerCase().includes(query));
-  renderProducts(filtered);
-});
-
-// Initial render
-renderProducts(products);
+renderProducts();
